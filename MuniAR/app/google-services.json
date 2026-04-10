@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1084552639208",
+    "project_id": "muniar-57b70",
+    "storage_bucket": "muniar-57b70.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1084552639208:android:775316c5e9404a95974f5d",
+        "android_client_info": {
+          "package_name": "com.example.muniar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3gkAiNodac3d7YPsY5kC1eLN130gddeo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
