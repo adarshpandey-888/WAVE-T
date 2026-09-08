@@ -13,6 +13,6 @@
  * /app: Contains the mobile application source code.
  * /server: Backend API for fetching coordinate data.
 ## 👨‍💻 Developed By
-**WAVE-T TEAM** 
-### 💡 Why this matters for Techfest?
+**ORBITAL NYX**
+### 💡 Why this matters for GOVERNANCE?
 Every year, there is a loss of hundred thousand rupees because underground pipes are accidentally cut during construction. **MuniAR** is a modern and scalable way to solve this.
