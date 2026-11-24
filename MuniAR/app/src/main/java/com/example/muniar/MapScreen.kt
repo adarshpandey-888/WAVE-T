@@ -1,7 +1,12 @@
 package com.example.muniar
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.location.Location
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -65,13 +70,50 @@ fun MapScreen(
         }
     }
 
+    // ✅ FIX: Runtime location permission (pehle ye missing tha -> app crash hota tha)
+    fun checkLocationPermission(): Boolean =
+        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+    var hasLocationPermission by remember { mutableStateOf(checkLocationPermission()) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        hasLocationPermission = result.values.any { it }
+    }
+
+    // Screen khulte hi permission maango (agar already granted nahi hai)
     LaunchedEffect(Unit) {
-        fusedLocationClient.lastLocation.addOnSuccessListener { loc: Location? ->
-            loc?.let {
-                currentLocation = LatLng(it.latitude, it.longitude)
-                gpsAccuracy = it.accuracy
+        if (!hasLocationPermission) {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
+    // Location tabhi fetch karo jab permission mil chuki ho
+    LaunchedEffect(hasLocationPermission) {
+        if (hasLocationPermission) {
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { loc: Location? ->
+                    loc?.let {
+                        currentLocation = LatLng(it.latitude, it.longitude)
+                        gpsAccuracy = it.accuracy
+                    }
+                }
+            } catch (e: SecurityException) {
+                e.printStackTrace()
             }
         }
+    }
+
+    // Map style ek baar load ho, aur fail ho to crash na ho
+    val mapStyle = remember {
+        runCatching { MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style) }.getOrNull()
     }
 
     val cameraPositionState = rememberCameraPositionState {
@@ -102,8 +144,8 @@ fun MapScreen(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             properties = MapProperties(
-                mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style),
-                isMyLocationEnabled = true
+                mapStyleOptions = mapStyle,
+                isMyLocationEnabled = hasLocationPermission // ✅ permission ke bina true karoge to crash
             ),
             uiSettings = MapUiSettings(zoomControlsEnabled = false, myLocationButtonEnabled = false),
             onMapClick = { selectedUtility = null }
